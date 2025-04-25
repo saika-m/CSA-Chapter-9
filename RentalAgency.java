@@ -1,10 +1,10 @@
 import java.util.*;
 
-class V {
+class Vehicle {
     private double c, s, cap;
     private String vt;
 
-    public V(double c, double s, double cap, String vt) {
+    public Vehicle(double c, double s, double cap, String vt) {
         this.c = c;
         this.s = s;
         this.cap = cap;
@@ -12,13 +12,7 @@ class V {
     }
 
     public boolean ok(double cg, double d, double t) {
-        if (cg > cap) {
-            return false;
-        }
-        if (time(d) > t) {
-            return false;
-        }
-        return true;
+        return cg <= cap && time(d) <= t;
     }
 
     public double opCost(double d) {
@@ -26,7 +20,7 @@ class V {
     }
 
     public double insCost(double cg, double d) {
-        return 0;
+        return 0.05 * d + 0.01 * cg;
     }
 
     public double total(double cg, double d) {
@@ -37,7 +31,7 @@ class V {
         return d / s;
     }
 
-    public String info(double cg, double d, double t) {
+    public String info(double cg, double d) {
         return String.format(
             "Type: %s\nOp Cost: $%.2f\nIns Cost: $%.2f\nTotal: $%.2f\nTime: %.2f hrs\n%s",
             vt, opCost(d), insCost(cg, d), total(cg, d), time(d), extra()
@@ -45,15 +39,7 @@ class V {
     }
 
     public String extra() {
-        if (isCar()) {
-            return String.format("Speed: %.0f mph", s);
-        } else {
-            return String.format("Cap: %.1f yd³", cap);
-        }
-    }
-
-    public boolean isCar() {
-        return cap == 0.5;
+        return "";
     }
 
     public double getC() { return c; }
@@ -62,77 +48,101 @@ class V {
     public String getVt() { return vt; }
 }
 
+class Car extends Vehicle {
+    public Car(double c, double s, String vt) {
+        super(c, s, 0.5, vt);
+    }
+    
+    @Override
+    public String extra() {
+        return String.format("Speed: %.0f mph", getS());
+    }
+}
+
+class Truck extends Vehicle {
+    public Truck(double c, double s, double cap, String vt) {
+        super(c, s, cap, vt);
+    }
+    
+    @Override
+    public double insCost(double cg, double d) {
+        return 0.01 * cg * d;
+    }
+    
+    @Override
+    public String extra() {
+        return String.format("Cap: %.1f yd³", getCap());
+    }
+}
+
 // Cars
-class Ferrari extends V {
-    public Ferrari() { super(1.0, 200, 0.5, "Ferrari"); }
+class Ferrari extends Car {
+    public Ferrari() { super(1.0, 200, "Ferrari"); }
+    
+    @Override
     public double insCost(double cg, double d) {
         return getS() * d / 1000;
     }
 }
 
-class Chevy extends V {
-    public Chevy() { super(0.25, 100, 0.5, "Chevy"); }
+class Chevy extends Car {
+    public Chevy() { super(0.25, 100, "Chevy"); }
+    
+    @Override
     public double insCost(double cg, double d) {
         return 0.05 * d;
     }
 }
 
-class VW extends V {
-    public VW() { super(0.10, 75, 0.5, "VW"); }
+class VW extends Car {
+    public VW() { super(0.10, 75, "VW"); }
+    
+    @Override
     public double insCost(double cg, double d) {
         return 0.10 * opCost(d);
     }
 }
 
 // Trucks
-class Pickup extends V {
+class Pickup extends Truck {
     public Pickup() { super(0.12, 55, 4, "Pickup"); }
-    public double insCost(double cg, double d) {
-        return 0.01 * cg * d;
-    }
 }
 
-class Dump extends V {
+class Dump extends Truck {
     public Dump() { super(0.80, 55, 10, "Dump"); }
-    public double insCost(double cg, double d) {
-        return 0.01 * cg * d;
-    }
 }
 
-class Semi extends V {
+class Semi extends Truck {
     public Semi() { super(1.5, 55, 30, "Semi"); }
-    public double insCost(double cg, double d) {
-        return 0.01 * cg * d;
-    }
 }
 
 // Agency
-class R {
-    private V[] vs = {
+class RentalAgencyHelper {
+    private Vehicle[] vehicles = {
         new Ferrari(), new Chevy(), new VW(),
         new Pickup(), new Dump(), new Semi()
     };
 
-    public List<V> okList(double cg, double d, double t) {
-        List<V> list = new ArrayList<>();
-        for (V v : vs) {
+    public List<Vehicle> okList(double cg, double d, double t) {
+        List<Vehicle> list = new ArrayList<>();
+        for (Vehicle v : vehicles) {
             if (v.ok(cg, d, t)) {
-            list.add(v);
+                list.add(v);
             }
         }
         return list;
     }
 
     public void show(double cg, double d, double t) {
-        List<V> list = okList(cg, d, t);
+        List<Vehicle> list = okList(cg, d, t);
         if (list.isEmpty()) {
             System.out.println("Not valid");
             return;
         }
 
         System.out.println("\nValid:");
-        for (V v : list) {
-            System.out.println(v.info(cg, d, t));
+        for (Vehicle v : list) {
+            System.out.println(v.info(cg, d));
             System.out.println();
         }
     }
@@ -140,7 +150,7 @@ class R {
 
 public class RentalAgency {
     public static void main(String[] args) {
-        R agency = new R();
+        RentalAgencyHelper agency = new RentalAgencyHelper();
         Scanner sc = new Scanner(System.in);
         System.out.println("Rental Agency");
 
