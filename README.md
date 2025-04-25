@@ -3,7 +3,7 @@ Chapter 9 Rental Agency
 
 ```mermaid
 ---
-title: Design
+title: Rental Agency Design
 ---
 classDiagram
     direction TB
@@ -12,27 +12,37 @@ classDiagram
         +main(String[] args)
     }
     
-    class R {
-        -V[] vs
-        +List~V~ okList(double cg, double d, double t)
+    class RentalAgencyHelper {
+        -Vehicle[] vehicles
+        +List~Vehicle~ okList(double cg, double d, double t)
         +show(double cg, double d, double t)
     }
     
-    class V {
+    class Vehicle {
         -double c
         -double s
         -double cap
         -String vt
-        +V(c, s, cap, vt)
+        +Vehicle(c, s, cap, vt)
         +ok(cg, d, t)
         +opCost(d)
         +insCost(cg, d)
         +total(cg, d)
         +time(d)
-        +info(cg, d, t)
+        +info(cg, d)
         +extra()
-        +isCar()
         +getters()
+    }
+    
+    class Car {
+        +Car(c, s, vt)
+        +extra()
+    }
+    
+    class Truck {
+        +Truck(c, s, cap, vt)
+        +insCost(cg, d)
+        +extra()
     }
     
     %% Car Classes
@@ -54,27 +64,26 @@ classDiagram
     %% Truck Classes
     class Pickup {
         +Pickup()
-        +insCost(cg, d)
     }
     
     class Dump {
         +Dump()
-        +insCost(cg, d)
     }
     
     class Semi {
         +Semi()
-        +insCost(cg, d)
     }
     
-    RentalAgency --> R
-    R o-- V
+    RentalAgency --> RentalAgencyHelper
+    RentalAgencyHelper o-- Vehicle
     
-    V <|-- Ferrari
-    V <|-- Chevy
-    V <|-- VW
+    Vehicle <|-- Car
+    Vehicle <|-- Truck
     
-    V <|-- Pickup
-    V <|-- Dump
-    V <|-- Semi
-```
+    Car <|-- Ferrari
+    Car <|-- Chevy
+    Car <|-- VW
+    
+    Truck <|-- Pickup
+    Truck <|-- Dump
+    Truck <|-- Semi
